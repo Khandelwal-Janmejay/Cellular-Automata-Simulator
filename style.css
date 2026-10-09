@@ -97,12 +97,12 @@ button:active, input[type="button"]:active { background: #dce1d3; }
     text-align: right;
     font-variant-numeric: tabular-nums;
 }
-label[for="speedSlider"] {
+label[for="fpsSlider"] {
     grid-area: 4 / 1 / 5 / 2;
     margin-top: 16px;
 }
-#speedValue { grid-area: 4 / 2 / 5 / 3; margin-top: 16px; }
-#speedSlider { grid-area: 5 / 1 / 6 / 3; }
+#fpsValue { grid-area: 4 / 2 / 5 / 3; margin-top: 16px; }
+#fpsSlider { grid-area: 5 / 1 / 6 / 3; }
 label[for="patternSelector"] { grid-area: 6 / 1 / 7 / 3; margin-top: 12px; }
 #patternSelector { grid-area: 7 / 1 / 8 / 3; }
 label[for="gridSizeSlider"] { grid-area: 8 / 1 / 9 / 2; margin-top: 12px; }

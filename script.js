@@ -2,7 +2,7 @@
 const startButton = document.getElementById('startButton');
 const stopButton = document.getElementById('stopButton');
 const resetButton = document.getElementById('resetButton');
-const speedSlider = document.getElementById('speedSlider');
+const fpsSlider = document.getElementById('fpsSlider');
 const patternSelector = document.getElementById('patternSelector');
 const gridSizeSlider = document.getElementById('gridSizeSlider');
 const stepButton = document.getElementById('stepButton');
@@ -10,38 +10,42 @@ const pauseButton = document.getElementById('pauseButton');
 const randomButton = document.getElementById('randomButton');
 
 //outputs and spans and counters
-const speedValue = document.getElementById('speedValue');
+const fpsValue = document.getElementById('fpsValue');
 const gridSizeValue = document.getElementById('gridSizeValue');
 const showgridlines = document.getElementById('showgridlines');
+
 // grid definition
 const simulationCanvas = document.getElementById('simulationCanvas');
 const ctx = simulationCanvas.getContext('2d');
 
 // variables
-let speed = speedSlider.value;
+let speed = fpsSlider.value;
 let grid = [];
 let grid_size = gridSizeSlider.value;
-
+let max_grid_size = 100;
 // event listeners
-speedSlider.addEventListener('input', () => {
+fpsSlider.addEventListener('input', () => {
     sync_speed();
 });
+
 gridSizeSlider.addEventListener('input', () => {
-    clear_lines();
     sync_grid();
-    grid_reset(grid_size);
+    reset_grid();
+    draw_grid();
     if (showgridlines.checked) {
         draw_lines();
     }
 })
 
 showgridlines.addEventListener('input', () => {
+    // if clicked, draw lines, else clear lines
     if (showgridlines.checked) {
         draw_lines();
     } else {
         clear_lines();
         draw_grid();
     }
+
 })
 
 randomButton.addEventListener('click', () => {
@@ -50,16 +54,21 @@ randomButton.addEventListener('click', () => {
 
 resetButton.addEventListener('click', () => {
     reset_grid();
+    create_grid(max_grid_size);
+    if (showgridlines.checked) {
+        draw_lines();
+    }
 })
 
 simulationCanvas.addEventListener('click', (event) => {
     toggle_cell(event);
 })
+
 // functions
 function sync_speed() {
-    if (speedSlider.value !== speed) {
-        speed = speedSlider.value;
-        speedValue.textContent = speed;
+    if (fpsSlider.value !== speed) {
+        speed = fpsSlider.value;
+        fpsValue.textContent = speed;
     }
 }
 
@@ -93,7 +102,6 @@ function draw_lines() {
     const num_cells_height = grid_size;
     const num_cells_width = Math.floor(4 / 3 * num_cells_height);
     ctx.strokeStyle = 'black';
-    draw_grid()
     for (let i = 0; i <= num_cells_height; i++) {
         ctx.beginPath();
         ctx.moveTo(0, i * vertical_cell_size);
@@ -112,19 +120,24 @@ function create_random_grid() {
     let num_cells_height = grid_size;
     let num_cells_width = Math.floor(4 / 3 * num_cells_height);
     let new_grid = [];
-    for (let i = 0; i < num_cells_height; i++) {
-        let row = [];
-        for (let j = 0; j < num_cells_width; j++) {
-            row.push(Math.random() < 0.5 ? 0 : 1); // Randomly assign 0 or 1
+    for (let i = 0; i < max_grid_size; i++) {
+        new_grid[i] = [];
+        for (let j = 0; j < Math.floor(max_grid_size * 4 / 3); j++) {
+            if (i < num_cells_height && j < num_cells_width) {
+                new_grid[i][j] = Math.random() < 0.5 ? 0 : 1; // Randomly assign 0 or 1
+            } else {
+                new_grid[i][j] = grid[i][j];
+            }
         }
-        new_grid.push(row);
     }
     return new_grid;
 }
 function randomize_grid() {
     grid = create_random_grid();
-    reset_grid();
     draw_grid();
+    if (showgridlines.checked) {
+        draw_lines();
+    }
 }
 
 function draw_grid() {
@@ -166,9 +179,34 @@ function toggle_cell(event) {
     }
 }
 
-grid_reset(grid_size);
 function grid_reset(num_cells) {
-    reset_grid();
+    let cloned = []
+    for (let i = 0; i < num_cells; i++) {
+        cloned[i] = [];
+        for (let j = 0; j < num_cells * 4 / 3; j++) {
+            if (grid[i][j] !== undefined) {
+                cloned[i][j] = grid[i][j];
+            }
+            else {
+                cloned[i][j] = 0;
+            }
+        }
+    }
+
+    for (let i = 0; i < num_cells; i++) {
+        grid[i] = [];
+        for (let j = 0; j < num_cells * 4 / 3; j++) {
+            if (cloned[i] !== undefined) {
+                grid[i][j] = cloned[i][j];
+            } else {
+                grid[i][j] = 0; // Initialize new cells to 0
+            }
+        }
+    }
+}
+
+function create_grid(num_cells) {
+    grid = [];
     for (let i = 0; i < num_cells; i++) {
         grid[i] = [];
         for (let j = 0; j < num_cells * 4 / 3; j++) {
@@ -195,3 +233,9 @@ function clear_lines() {
         ctx.stroke();
     }
 }
+
+function full_reset() {
+    clear_lines();
+    reset_grid();
+}
+create_grid(max_grid_size);
