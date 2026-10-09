@@ -9,18 +9,35 @@
 <body>
     <div class="container">
         <h1>Neural Cellular Automata</h1>
-        <p>Welcome to the Neural Cellular Automata project! This project explores the fascinating world of cellular automata and how neural networks can be used to simulate complex behaviors.</p>
+        <p>Welcome to the Cellular Automata project!</p>
         <p>Use the controls below to interact with the simulation:</p>
         <div class="controls">
             <button id="startButton">Start Simulation</button>
             <button id="stopButton">Stop Simulation</button>
             <button id="resetButton">Reset Simulation</button>
+            <input type="range" id="speedSlider" min="1" max="100" value="50">
+            <label for="speedSlider">Speed:</label>
+            <span id="speedValue">50</span>
+            <label for="patternSelector">Pattern:</label>
+            <select id="patternSelector">
+                <option value="pattern1">Pattern 1</option>
+                <option value="pattern2">Pattern 2</option>
+                <option value="pattern3">Pattern 3</option>
+            </select>
+            <input type="range" id="gridSizeSlider" min="10" max="100" value="50">
+            <label for="gridSizeSlider">Grid Size:</label>
+            <span id="gridSizeValue">50</span>
+            <input type="button" id="stepButton" value="Step Simulation">
+            <input type="button" id="pauseButton" value="Pause Simulation">
+            <input type="button" id="randomButton" value="Randomize">
+            <div class="toggle-row">
+                <input type="checkbox" id="showgridlines">
+                <label for="showgridlines">Show Grid Lines</label>
+            </div>
         </div>
         <canvas id="simulationCanvas" width="800" height="600"></canvas>
     </div>
 
     <script src="script.js"></script>
-    <area id="simulationArea" shape="rect" coords="0,0,800,600" href="#" alt="Simulation Area">
 </body>
-<!-- comment -->
 </html>

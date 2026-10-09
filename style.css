@@ -1,0 +1,198 @@
+/* A quiet workspace. The simulation, not the chrome, is the focus. */
+:root {
+    color-scheme: light;
+    --paper: #f4f2ec;
+    --ink: #262923;
+    --muted: #666b61;
+    --line: #d4d7cc;
+    --accent: #3f5841;
+}
+
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    padding: clamp(24px, 5vw, 72px);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+}
+.container {
+    max-width: 1152px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    column-gap: 36px;
+    align-items: start;
+}
+h1 {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(30px, 4vw, 50px);
+    font-weight: 400;
+    letter-spacing: -1.6px;
+    line-height: 1.1;
+}
+.container > p {
+    grid-column: 1 / -1;
+    max-width: 76ch;
+    margin: 16px 0 0;
+    color: var(--muted);
+}
+.container > p + p {
+    max-width: none;
+    margin: 28px 0 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+}
+
+/* Arrange the existing flat HTML into a deliberate control rail. */
+.controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 40px;
+    gap: 10px 8px;
+    align-items: center;
+    padding-right: 24px;
+    border-right: 1px solid var(--line);
+}
+button, input[type="button"], select {
+    min-width: 0;
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 12px;
+    border: 1px solid #b9beb1;
+    border-radius: 3px;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+}
+button, input[type="button"] {
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 120ms ease, border-color 120ms ease;
+}
+button:hover, input[type="button"]:hover {
+    background: #e7e9df;
+    border-color: #929b88;
+}
+button:active, input[type="button"]:active { background: #dce1d3; }
+#startButton {
+    grid-area: 1 / 1 / 2 / 3;
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+#startButton:hover { background: #304632; }
+#stopButton { grid-area: 2 / 1 / 3 / 3; }
+#resetButton { grid-area: 3 / 1 / 4 / 3; }
+
+.controls label { font-size: 12px; color: var(--muted); }
+.controls span {
+    font-family: Consolas, monospace;
+    font-size: 12px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+label[for="speedSlider"] {
+    grid-area: 4 / 1 / 5 / 2;
+    margin-top: 16px;
+}
+#speedValue { grid-area: 4 / 2 / 5 / 3; margin-top: 16px; }
+#speedSlider { grid-area: 5 / 1 / 6 / 3; }
+label[for="patternSelector"] { grid-area: 6 / 1 / 7 / 3; margin-top: 12px; }
+#patternSelector { grid-area: 7 / 1 / 8 / 3; }
+label[for="gridSizeSlider"] { grid-area: 8 / 1 / 9 / 2; margin-top: 12px; }
+#gridSizeValue { grid-area: 8 / 2 / 9 / 3; margin-top: 12px; }
+#gridSizeSlider { grid-area: 9 / 1 / 10 / 3; }
+#stepButton { grid-area: 10 / 1 / 11 / 3; margin-top: 22px; }
+#pauseButton { grid-area: 11 / 1 / 12 / 3; }
+#randomButton { grid-area: 12 / 1 / 13 / 3; }
+
+input[type="range"] {
+    appearance: none;
+    width: 100%;
+    min-width: 0;
+    height: 24px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+    height: 3px;
+    background: #c5cbbe;
+}
+input[type="range"]::-moz-range-track {
+    height: 3px;
+    background: #c5cbbe;
+}
+input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 12px;
+    height: 15px;
+    margin-top: -6px;
+    border-radius: 2px;
+    background: var(--accent);
+}
+input[type="range"]::-moz-range-thumb {
+    width: 12px;
+    height: 15px;
+    border: 0;
+    border-radius: 2px;
+    background: var(--accent);
+}
+select { cursor: pointer; background: #faf9f5; }
+:where(button, input, select):focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+}
+:where(button, input, select):disabled { opacity: .45; cursor: not-allowed; }
+
+#simulationCanvas {
+    display: block;
+    grid-column: 2;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    background: #141914;
+    border: 1px solid #262d26;
+    border-radius: 2px;
+}
+::selection { background: #d0dbc7; color: var(--ink); }
+
+@media (max-width: 760px) {
+    .container { grid-template-columns: minmax(0, 1fr); }
+    h1 { letter-spacing: -1px; }
+    .controls {
+        grid-column: 1;
+        grid-template-columns: minmax(0, 1fr) 40px;
+        padding: 0 0 24px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+    }
+    #simulationCanvas { grid-column: 1; margin-top: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; }
+}
+
+.toggle-row {
+    grid-column: 1 / -1;   /* span both columns instead of auto-placing into col 2 */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.toggle-row input[type="checkbox"] {
+    width: 16px;     /* stop grid-stretch from inflating it */
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.toggle-row label {
+    white-space: nowrap;
+}
