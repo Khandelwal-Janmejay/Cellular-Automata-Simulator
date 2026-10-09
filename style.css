@@ -160,6 +160,7 @@ select { cursor: pointer; background: #faf9f5; }
     background: #141914;
     border: 1px solid #262d26;
     border-radius: 2px;
+    cursor: crosshair;
 }
 ::selection { background: #d0dbc7; color: var(--ink); }
 
