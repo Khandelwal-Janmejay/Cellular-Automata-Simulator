@@ -29,6 +29,8 @@ let lastFrameTime = 0;
 let animationFrameId = null;
 let isRunning = false;
 let isMouseDown = false;
+let current_row = 0;
+let current_col = 0;
 // Cellular Automata Variables
 let rules = [
     [3],
@@ -264,7 +266,9 @@ function toggle_cell(event) {
 
     const col = Math.floor(x / horizontal_cell_size);
     const row = Math.floor(y / vertical_cell_size);
-
+    if (isMouseDown) {
+        if (row === current_row && col === current_col) return;
+    }
     if (row < 0 || row >= grid.length || col < 0 || col >= grid[0].length) return;
 
     grid[row][col] = grid[row][col] === 1 ? 0 : 1;
@@ -273,6 +277,8 @@ function toggle_cell(event) {
         draw_lines();
     }
     update_alive();
+    current_col = col;
+    current_row = row;
 }
 
 function create_grid(num_cells) {
