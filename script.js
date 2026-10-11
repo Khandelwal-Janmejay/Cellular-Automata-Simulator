@@ -6,13 +6,14 @@ const fpsSlider = document.getElementById('fpsSlider');
 const patternSelector = document.getElementById('patternSelector');
 const gridSizeSlider = document.getElementById('gridSizeSlider');
 const stepButton = document.getElementById('stepButton');
-const pauseButton = document.getElementById('pauseButton');
 const randomButton = document.getElementById('randomButton');
 
 //outputs and spans and counters
 const fpsValue = document.getElementById('fpsValue');
 const gridSizeValue = document.getElementById('gridSizeValue');
 const showgridlines = document.getElementById('showgridlines');
+const generationCounter = document.getElementById('generationCounter');
+const aliveCounter = document.getElementById('aliveCounter');
 
 // grid definition
 const simulationCanvas = document.getElementById('simulationCanvas');
@@ -23,22 +24,44 @@ let speed = fpsSlider.value;
 let grid = [];
 let grid_size = gridSizeSlider.value;
 let max_grid_size = 100;
+let interval = 1000 / speed;
+let lastFrameTime = 0;
+let animationFrameId = null;
+let isRunning = false;
+
+// Cellular Automata Variables
+let rules = [
+    [3],
+    [2, 3],
+    [3, 6],
+    [2,3],
+    [2],
+    [0]
+];
+
+let current_rule_alive = rules[0];
+let current_rule_dead = rules[1];
+
 // event listeners
 fpsSlider.addEventListener('input', () => {
     sync_speed();
 });
 
 gridSizeSlider.addEventListener('input', () => {
-    sync_grid();
-    reset_grid();
-    draw_grid();
-    if (showgridlines.checked) {
-        draw_lines();
+    if (!isRunning) {
+        sync_grid();
+        reset_grid();
+        draw_grid();
+        if (showgridlines.checked) {
+            draw_lines();
+        }
+    }
+    else {
+        gridSizeSlider.value = grid_size;
     }
 })
 
 showgridlines.addEventListener('input', () => {
-    // if clicked, draw lines, else clear lines
     if (showgridlines.checked) {
         draw_lines();
     } else {
@@ -58,17 +81,74 @@ resetButton.addEventListener('click', () => {
     if (showgridlines.checked) {
         draw_lines();
     }
+    reset_counters();
+    stop_simulation();
 })
 
 simulationCanvas.addEventListener('click', (event) => {
     toggle_cell(event);
 })
 
+startButton.addEventListener('click', () => {
+    start_simulation();
+})
+
+stopButton.addEventListener('click', () => {
+    stop_simulation();
+});
+
+patternSelector.addEventListener('input', () => {
+    const selectedPattern = patternSelector.value;
+    switch (selectedPattern) {
+        case 'gol':
+            current_rule_alive = rules[0];
+            current_rule_dead = rules[1];
+            break;
+        case 'highLife':
+            current_rule_alive = rules[2];
+            current_rule_dead = rules[3];
+            break;
+        case 'seeds':
+            current_rule_alive = rules[4];
+            current_rule_dead = rules[5];
+            break;
+        default:
+            current_rule_alive = rules[0];
+            current_rule_dead = rules[1];
+    }
+})
+
+stepButton.addEventListener('click', () => {
+    if (!isRunning) {
+        update_grid();
+    }
+    update_counters();
+})
 // functions
 function sync_speed() {
     if (fpsSlider.value !== speed) {
         speed = fpsSlider.value;
         fpsValue.textContent = speed;
+        interval = 1000 / speed;
+    }
+}
+
+function start_simulation() {
+    if (isRunning) {
+        return;
+    }
+
+    isRunning = true;
+    lastFrameTime = 0;
+    animationFrameId = requestAnimationFrame(simulation_control);
+}
+
+function stop_simulation() {
+    isRunning = false;
+
+    if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
     }
 }
 
@@ -138,6 +218,7 @@ function randomize_grid() {
     if (showgridlines.checked) {
         draw_lines();
     }
+    update_alive();
 }
 
 function draw_grid() {
@@ -177,32 +258,7 @@ function toggle_cell(event) {
     if (showgridlines.checked) {
         draw_lines();
     }
-}
-
-function grid_reset(num_cells) {
-    let cloned = []
-    for (let i = 0; i < num_cells; i++) {
-        cloned[i] = [];
-        for (let j = 0; j < num_cells * 4 / 3; j++) {
-            if (grid[i][j] !== undefined) {
-                cloned[i][j] = grid[i][j];
-            }
-            else {
-                cloned[i][j] = 0;
-            }
-        }
-    }
-
-    for (let i = 0; i < num_cells; i++) {
-        grid[i] = [];
-        for (let j = 0; j < num_cells * 4 / 3; j++) {
-            if (cloned[i] !== undefined) {
-                grid[i][j] = cloned[i][j];
-            } else {
-                grid[i][j] = 0; // Initialize new cells to 0
-            }
-        }
-    }
+    update_alive();
 }
 
 function create_grid(num_cells) {
@@ -234,8 +290,97 @@ function clear_lines() {
     }
 }
 
-function full_reset() {
-    clear_lines();
-    reset_grid();
+function simulation_control(current_time) {
+    if (!isRunning) {
+        return;
+    }
+
+    animationFrameId = requestAnimationFrame(simulation_control);
+
+    if (current_time - lastFrameTime < interval) {
+        return;
+    }
+    lastFrameTime = current_time;
+
+    update_grid();
+}
+
+function calculate_next_generation() {
+    const num_cells_height = grid_size;
+    const num_cells_width = Math.floor(4 / 3 * num_cells_height);
+    let new_grid = [];
+    for (let i = 0; i < num_cells_height; i++) {
+        new_grid[i] = [];
+        for (let j = 0; j < num_cells_width; j++) {
+            new_grid[i][j] = 0;
+        }
+    }
+    // Apply the rules of the game to determine the next state of each cell
+    for (let i = 0; i < num_cells_height; i++) {
+        for (let j = 0; j < num_cells_width; j++) {
+            let alive_neighbors = 0;
+            // Count alive neighbors
+            for (let x = -1; x <= 1; x++) {
+                for (let y = -1; y <= 1; y++) {
+                    if (x === 0 && y === 0) continue; // Skip the cell itself
+                    const ni = i + x;
+                    const nj = j + y;
+                    if (ni >= 0 && ni < num_cells_height && nj >= 0 && nj < num_cells_width) {
+                        alive_neighbors += grid[ni][nj];
+                    }
+                }
+            }
+            // Apply the rules of the game
+            if (grid[i][j] === 1) {
+                // Cell is alive
+                if (alive_neighbors < 2 || alive_neighbors > 3) {
+                    new_grid[i][j] = 0; // Cell dies
+                } else {
+                    new_grid[i][j] = 1; // Cell survives
+                }
+            } else {
+                // Cell is dead
+                if (alive_neighbors === 3) {
+                    new_grid[i][j] = 1;
+                } else {
+                    new_grid[i][j] = 0; // Cell remains dead
+                }
+            }
+        }
+    }
+    grid = new_grid;
+}
+function update_grid() {
+    calculate_next_generation();
+    draw_grid();
+    if (showgridlines.checked) {
+        draw_lines();
+    }
+    update_counters();
+}
+
+function update_counters() {
+    let current_generation = parseInt(generationCounter.textContent.split(": ")[1]);
+    current_generation++;
+    generationCounter.textContent = "GENERATION: " + String(current_generation);
+    update_alive();
+}
+
+function update_alive() {
+    const num_cells_height = grid_size;
+    const num_cells_width = Math.floor(4 / 3 * num_cells_height);
+    let alive_count = 0;
+    for (let i = 0; i < num_cells_height; i++) {
+        for (let j = 0; j < num_cells_width; j++) {
+            if (grid[i][j] === 1) {
+                alive_count++;
+            }
+        }
+    }
+    aliveCounter.textContent = "ALIVE CELLS: " + String(alive_count);
+}
+function reset_counters() {
+    generationCounter.textContent = "GENERATION: 0";
+    aliveCounter.textContent = "ALIVE CELLS: 0";
 }
 create_grid(max_grid_size);
