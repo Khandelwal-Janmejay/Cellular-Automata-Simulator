@@ -28,7 +28,7 @@ let interval = 1000 / speed;
 let lastFrameTime = 0;
 let animationFrameId = null;
 let isRunning = false;
-
+let isMouseDown = false;
 // Cellular Automata Variables
 let rules = [
     [3],
@@ -40,7 +40,7 @@ let rules = [
 ];
 
 let current_rule_alive = rules[0];
-let current_rule_dead = rules[1];
+let current_rule_survive = rules[1];
 
 // event listeners
 fpsSlider.addEventListener('input', () => {
@@ -89,6 +89,20 @@ simulationCanvas.addEventListener('click', (event) => {
     toggle_cell(event);
 })
 
+simulationCanvas.addEventListener('mousedown', (event) => {
+    isMouseDown = true;
+})
+
+simulationCanvas.addEventListener('mouseup', (event) => {
+    isMouseDown = false;
+})
+
+simulationCanvas.addEventListener('mousemove', (event) => {
+    if (isMouseDown) {
+        toggle_cell(event);
+    }
+})
+
 startButton.addEventListener('click', () => {
     start_simulation();
 })
@@ -102,19 +116,19 @@ patternSelector.addEventListener('input', () => {
     switch (selectedPattern) {
         case 'gol':
             current_rule_alive = rules[0];
-            current_rule_dead = rules[1];
+            current_rule_survive = rules[1];
             break;
         case 'highLife':
             current_rule_alive = rules[2];
-            current_rule_dead = rules[3];
+            current_rule_survive = rules[3];
             break;
         case 'seeds':
             current_rule_alive = rules[4];
-            current_rule_dead = rules[5];
+            current_rule_survive = rules[5];
             break;
         default:
             current_rule_alive = rules[0];
-            current_rule_dead = rules[1];
+            current_rule_survive = rules[1];
     }
 })
 
@@ -333,14 +347,14 @@ function calculate_next_generation() {
             // Apply the rules of the game
             if (grid[i][j] === 1) {
                 // Cell is alive
-                if (alive_neighbors < 2 || alive_neighbors > 3) {
-                    new_grid[i][j] = 0; // Cell dies
+                if (current_rule_survive.includes(alive_neighbors)) {
+                    new_grid[i][j] = 1;
                 } else {
-                    new_grid[i][j] = 1; // Cell survives
+                    new_grid[i][j] = 0;
                 }
             } else {
                 // Cell is dead
-                if (alive_neighbors === 3) {
+                if (current_rule_alive.includes(alive_neighbors)) {
                     new_grid[i][j] = 1;
                 } else {
                     new_grid[i][j] = 0; // Cell remains dead
